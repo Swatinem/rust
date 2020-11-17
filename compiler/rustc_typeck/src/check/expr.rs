@@ -1107,9 +1107,9 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             return self.tcx.ty_error();
         };
 
-        // Prohibit struct expressions when non-exhaustive flag is set.
+        // Prohibit struct expressions when non-exhaustive flag is set and there is no FRU.
         let adt = adt_ty.ty_adt_def().expect("`check_struct_path` returned non-ADT type");
-        if !adt.did.is_local() && variant.is_field_list_non_exhaustive() {
+        if !adt.did.is_local() && variant.is_field_list_non_exhaustive() && base_expr.is_none() {
             self.tcx
                 .sess
                 .emit_err(StructExprNonExhaustive { span: expr.span, what: adt.variant_descr() });

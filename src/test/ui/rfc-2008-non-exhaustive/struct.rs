@@ -8,6 +8,12 @@ fn main() {
     //~^ ERROR cannot create non-exhaustive struct
         first_field: 1920,
         second_field: 1080,
+        third_field: false,
+    };
+
+    let fr = FunctionalRecord {
+        first_field: 1920,
+        second_field: 1080,
         ..FunctionalRecord::default()
     };
 
