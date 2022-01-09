@@ -509,6 +509,8 @@ crate fn make_test(
         prog.push_str(&format!("#![{}]\n", attr));
         line_offset += 1;
     }
+    prog.push_str("#![feature(no_coverage)]\n");
+    line_offset += 1;
 
     // Now push any outer attributes from the example, assuming they
     // are intended to be crate attributes.
@@ -668,18 +670,18 @@ crate fn make_test(
         let (main_pre, main_post) = if returns_result {
             (
                 format!(
-                    "fn main() {{ {}fn {}() -> Result<(), impl core::fmt::Debug> {{\n",
+                    "#[no_coverage] fn main() {{ {}fn {}() -> Result<(), impl core::fmt::Debug> {{\n",
                     inner_attr, inner_fn_name
                 ),
                 format!("\n}} {}().unwrap() }}", inner_fn_name),
             )
         } else if test_id.is_some() {
             (
-                format!("fn main() {{ {}fn {}() {{\n", inner_attr, inner_fn_name),
+                format!("#[no_coverage] fn main() {{ {}fn {}() {{\n", inner_attr, inner_fn_name),
                 format!("\n}} {}() }}", inner_fn_name),
             )
         } else {
-            ("fn main() {\n".into(), "\n}".into())
+            ("#[no_coverage] fn main() {\n".into(), "\n}".into())
         };
         // Note on newlines: We insert a line/newline *before*, and *after*
         // the doctest and adjust the `line_offset` accordingly.

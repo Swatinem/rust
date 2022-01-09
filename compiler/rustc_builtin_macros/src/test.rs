@@ -330,6 +330,9 @@ pub fn expand_test_or_bench(
             Annotatable::Stmt(P(cx.stmt_item(sp, item))),
         ]
     } else {
+        // #[no_coverage]
+        // let no_cover_attr = cx.attribute(cx.meta_word(attr_sp, sym::no_coverage));
+        // item.attrs.push(no_cover_attr);
         vec![
             // Access to libtest under a hygienic name
             Annotatable::Item(test_extern),

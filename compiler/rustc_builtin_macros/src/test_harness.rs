@@ -114,6 +114,13 @@ impl<'a> MutVisitor for TestHarnessGenerator<'a> {
         noop_visit_crate(c, self);
         self.add_test_cases(ast::CRATE_NODE_ID, c.span, prev_tests);
 
+        // #![feature(no_coverage)]
+        // let sp = self.cx.def_site;
+        // let attr_feature = attr::mk_attr_inner(attr::mk_list_item(
+        //     Ident::new(sym::feature, sp),
+        //     vec![attr::mk_nested_word_item(Ident::new(sym::no_coverage, sp))],
+        // ));
+        // c.attrs.push(attr_feature);
         // Create a main function to run our tests
         c.items.push(mk_main(&mut self.cx));
     }
