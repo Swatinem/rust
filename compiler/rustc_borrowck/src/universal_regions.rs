@@ -656,11 +656,14 @@ impl<'cx, 'tcx> UniversalRegionsBuilder<'cx, 'tcx> {
 
             DefiningTy::Generator(def_id, substs, movability) => {
                 assert_eq!(self.mir_def.did.to_def_id(), def_id);
-                let resume_ty = substs.as_generator().resume_ty();
                 let output = substs.as_generator().return_ty();
                 let generator_ty = tcx.mk_generator(def_id, substs, movability);
-                let inputs_and_output =
-                    self.infcx.tcx.intern_type_list(&[generator_ty, resume_ty, output]);
+                let inputs_and_output = if tcx.generator_is_async(def_id) {
+                    self.infcx.tcx.intern_type_list(&[generator_ty, output])
+                } else {
+                    let resume_ty = substs.as_generator().resume_ty();
+                    self.infcx.tcx.intern_type_list(&[generator_ty, resume_ty, output])
+                };
                 ty::Binder::dummy(inputs_and_output)
             }
 

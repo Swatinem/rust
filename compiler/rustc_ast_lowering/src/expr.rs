@@ -589,14 +589,10 @@ impl<'hir> LoweringContext<'_, 'hir> {
     ) -> hir::ExprKind<'hir> {
         let output = ret_ty.unwrap_or_else(|| hir::FnRetTy::DefaultReturn(self.lower_span(span)));
 
-        // Resume argument type: `ResumeTy`
-        let unstable_span =
-            self.mark_span_with_reason(DesugaringKind::Async, span, self.allow_gen_future.clone());
-        let resume_ty = hir::QPath::LangItem(hir::LangItem::ResumeTy, unstable_span, None);
         let input_ty = hir::Ty {
             hir_id: self.next_id(),
-            kind: hir::TyKind::Path(resume_ty),
-            span: unstable_span,
+            kind: hir::TyKind::Infer,
+            span: self.lower_span(span),
         };
 
         // The closure/generator `FnDecl` takes a single (resume) argument of type `input_ty`.
@@ -706,7 +702,7 @@ impl<'hir> LoweringContext<'_, 'hir> {
     ///     mut __awaitee => loop {
     ///         match unsafe { ::std::future::Future::poll(
     ///             <::std::pin::Pin>::new_unchecked(&mut __awaitee),
-    ///             ::std::future::get_context(task_context),
+    ///             task_context,
     ///         ) } {
     ///             ::std::task::Poll::Ready(result) => break result,
     ///             ::std::task::Poll::Pending => {}
@@ -747,7 +743,7 @@ impl<'hir> LoweringContext<'_, 'hir> {
         // unsafe {
         //     ::std::future::Future::poll(
         //         ::std::pin::Pin::new_unchecked(&mut __awaitee),
-        //         ::std::future::get_context(task_context),
+        //         task_context,
         //     )
         // }
         let poll_expr = {
@@ -765,16 +761,10 @@ impl<'hir> LoweringContext<'_, 'hir> {
                 arena_vec![self; ref_mut_awaitee],
                 Some(expr_hir_id),
             );
-            let get_context = self.expr_call_lang_item_fn_mut(
-                gen_future_span,
-                hir::LangItem::GetContext,
-                arena_vec![self; task_context],
-                Some(expr_hir_id),
-            );
             let call = self.expr_call_lang_item_fn(
                 span,
                 hir::LangItem::FuturePoll,
-                arena_vec![self; new_unchecked, get_context],
+                arena_vec![self; new_unchecked, task_context],
                 Some(expr_hir_id),
             );
             self.arena.alloc(self.expr_unsafe(call))

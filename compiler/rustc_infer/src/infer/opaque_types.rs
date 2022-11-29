@@ -465,18 +465,21 @@ where
                 substs.as_closure().sig_as_fn_ptr_ty().visit_with(self);
             }
 
-            ty::Generator(_, ref substs, _) => {
+            ty::Generator(did, ref substs, _) => {
                 // Skip lifetime parameters of the enclosing item(s)
                 // Also skip the witness type, because that has no free regions.
+                let substs = substs.as_generator();
 
-                substs.as_generator().tupled_upvars_ty().visit_with(self);
-                substs.as_generator().return_ty().visit_with(self);
-                substs.as_generator().yield_ty().visit_with(self);
-                substs.as_generator().resume_ty().visit_with(self);
+                substs.tupled_upvars_ty().visit_with(self);
+                substs.return_ty().visit_with(self);
+                if !self.tcx.generator_is_async(*did) {
+                    substs.yield_ty().visit_with(self);
+                    substs.resume_ty().visit_with(self);
+                }
             }
 
             ty::Opaque(def_id, ref substs) => {
-                // Skip lifetime paramters that are not captures.
+                // Skip lifetime parameters that are not captures.
                 let variances = self.tcx.variances_of(*def_id);
 
                 for (v, s) in std::iter::zip(variances, substs.iter()) {

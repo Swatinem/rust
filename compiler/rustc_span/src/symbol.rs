@@ -264,7 +264,6 @@ symbols! {
         Relaxed,
         Release,
         Result,
-        ResumeTy,
         Return,
         Right,
         Rust,

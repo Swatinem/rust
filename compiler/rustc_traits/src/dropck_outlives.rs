@@ -202,7 +202,7 @@ fn dtorck_constraint_for_ty<'tcx>(
             })?
         }
 
-        ty::Generator(_, substs, _movability) => {
+        ty::Generator(did, substs, _movability) => {
             // rust-lang/rust#49918: types can be constructed, stored
             // in the interior, and sit idle when generator yields
             // (and is subsequently dropped).
@@ -242,7 +242,9 @@ fn dtorck_constraint_for_ty<'tcx>(
                     .upvar_tys()
                     .map(|t| -> ty::subst::GenericArg<'tcx> { t.into() }),
             );
-            constraints.outlives.push(substs.as_generator().resume_ty().into());
+            if !tcx.generator_is_async(*did) {
+                constraints.outlives.push(substs.as_generator().resume_ty().into());
+            }
         }
 
         ty::Adt(def, substs) => {

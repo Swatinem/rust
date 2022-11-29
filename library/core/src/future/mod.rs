@@ -44,7 +44,6 @@ pub use poll_fn::{poll_fn, PollFn};
 ///    non-Send/Sync as well, and we don't want that.
 ///
 /// It also simplifies the HIR lowering of `.await`.
-#[cfg_attr(not(bootstrap), lang = "ResumeTy")]
 #[doc(hidden)]
 #[unstable(feature = "gen_future", issue = "50547")]
 #[derive(Debug, Copy, Clone)]
@@ -102,7 +101,7 @@ where
     GenFuture(gen)
 }
 
-#[lang = "get_context"]
+#[cfg_attr(bootstrap, lang = "get_context")]
 #[doc(hidden)]
 #[unstable(feature = "gen_future", issue = "50547")]
 #[must_use]
